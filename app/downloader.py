@@ -3,9 +3,11 @@ from __future__ import annotations
 import glob
 import logging
 import os
+import re
 from pathlib import Path
 
 import yt_dlp
+from yt_dlp.networking.impersonate import ImpersonateTarget
 
 from app.config import Settings
 from app.storage import DownloadStorage
@@ -37,12 +39,19 @@ class VideoDownloader:
             "windowsfilenames": True,
             "quiet": True,
             "no_warnings": True,
+            "http_headers": {
+                "User-Agent": (
+                    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+                    "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+                ),
+                "Accept-Language": "en-US,en;q=0.9",
+            },
             "socket_timeout": 30,
             "retries": 3,
             "fragment_retries": 3,
             "js_runtimes": {"node": {}},
             "remote_components": {"ejs": "github"},
-            "impersonate": "chrome",
+            "impersonate": ImpersonateTarget("chrome"),
             "progress_hooks": [self._progress_hook(job_id)],
         }
         if self.settings.cookies_file:
@@ -51,6 +60,12 @@ class VideoDownloader:
             with yt_dlp.YoutubeDL(options) as ydl:
                 ydl.download([url])
         except Exception as exc:
+            logger.warning(
+                "job=%s action=yt_dlp_failed error_type=%s error=%s",
+                job_id,
+                type(exc).__name__,
+                self._safe_log_error(str(exc)),
+            )
             try:
                 self.storage.cleanup(job_dir)
             except Exception:
@@ -81,7 +96,9 @@ class VideoDownloader:
         lowered = message.lower()
         if "sign in to confirm" in lowered or "not a bot" in lowered:
             return "YouTube requires a supported JavaScript runtime or authenticated cookies"
-        if "private" in lowered or "login" in lowered or "authentication" in lowered:
+        if "cookies" in lowered or "log in" in lowered or "login required" in lowered:
+            return "this video requires login cookies"
+        if "private" in lowered or "authentication" in lowered:
             return "private or authentication-required video"
         if "geo" in lowered or "not available in your country" in lowered:
             return "video is unavailable in this region"
@@ -90,3 +107,9 @@ class VideoDownloader:
         if "ffmpeg" in lowered:
             return "FFmpeg could not process this video"
         return "video download failed"
+
+    @staticmethod
+    def _safe_log_error(message: str) -> str:
+        # yt-dlp errors can echo URLs; avoid logging query strings or credentials.
+        detail = (message.splitlines()[-1] if message.splitlines() else "unknown yt-dlp error")[:300]
+        return re.sub(r"https?://\S+", "<url>", detail)
