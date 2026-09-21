@@ -32,6 +32,8 @@ TG_BOT_TOKEN=your_botfather_token
 TELEGRAM_API_ID=your_numeric_api_id
 TELEGRAM_API_HASH=your_api_hash
 TELEGRAM_API_BASE_URL=http://telegram-bot-api:8081
+# Optional, only if YouTube requires authentication cookies:
+# COOKIES_FILE=/run/cookies/youtube.txt
 ```
 
 Do not commit `.env`. No VPS IP or host port is hardcoded; the bot reaches the
@@ -80,6 +82,19 @@ waits for the Local API healthcheck before starting.
 Send `/start`, then a small public video URL. Watch the logs for the job ID and
 the download/upload phases. Test a larger file only after confirming that the
 deployed Local Bot API version supports its size.
+
+If YouTube reports `Sign in to confirm you are not a bot`, export a Netscape
+cookies file from an authorized browser account, copy it to
+`cookies/youtube.txt` on the VPS, set `COOKIES_FILE=/run/cookies/youtube.txt`,
+and recreate the bot:
+
+```bash
+docker compose up -d --force-recreate bot
+```
+
+Do not commit or log cookies. TikTok requires a direct video URL such as
+`https://www.tiktok.com/@creator/video/<id>` or a valid `vt.tiktok.com` share
+link; pages such as `/in/about` are intentionally rejected.
 
 ## 5. Storage and maintenance
 

@@ -28,6 +28,23 @@ def validate_url(url: str) -> bool:
     )
 
 
+def validate_video_url(url: str) -> tuple[bool, str | None]:
+    if not validate_url(url):
+        return False, "invalid URL"
+    parsed = urlsplit(url)
+    hostname = (parsed.hostname or "").lower()
+    path = parsed.path.lower().rstrip("/")
+    if hostname in {"www.tiktok.com", "tiktok.com"} and path in {
+        "/about",
+        "/in/about",
+        "/discover",
+        "/foryou",
+        "/explore",
+    }:
+        return False, "send a direct TikTok video link, not a TikTok information page"
+    return True, None
+
+
 def domain_for_log(url: str) -> str:
     try:
         return (urlsplit(url).hostname or "unknown").lower()

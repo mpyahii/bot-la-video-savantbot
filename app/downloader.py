@@ -40,8 +40,13 @@ class VideoDownloader:
             "socket_timeout": 30,
             "retries": 3,
             "fragment_retries": 3,
+            "js_runtimes": {"node": {}},
+            "remote_components": {"ejs": "github"},
+            "impersonate": "chrome",
             "progress_hooks": [self._progress_hook(job_id)],
         }
+        if self.settings.cookies_file:
+            options["cookiefile"] = str(self.settings.cookies_file)
         try:
             with yt_dlp.YoutubeDL(options) as ydl:
                 ydl.download([url])
@@ -74,12 +79,14 @@ class VideoDownloader:
     @staticmethod
     def _friendly_error(message: str) -> str:
         lowered = message.lower()
+        if "sign in to confirm" in lowered or "not a bot" in lowered:
+            return "YouTube requires a supported JavaScript runtime or authenticated cookies"
         if "private" in lowered or "login" in lowered or "authentication" in lowered:
             return "private or authentication-required video"
         if "geo" in lowered or "not available in your country" in lowered:
             return "video is unavailable in this region"
         if "unsupported url" in lowered:
-            return "unsupported video URL"
+            return "unsupported or non-video URL; send a direct public video link"
         if "ffmpeg" in lowered:
             return "FFmpeg could not process this video"
         return "video download failed"

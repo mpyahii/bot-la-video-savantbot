@@ -9,8 +9,10 @@ services:
       TELEGRAM_API_BASE_URL: http://telegram-bot-api:8081
       DOWNLOAD_DIR: /data/downloads
       MIN_FREE_DISK_GB: ${MIN_FREE_DISK_GB:-5}
+      COOKIES_FILE: ${COOKIES_FILE:-}
     volumes:
       - bot-downloads:/data/downloads
+      - ./cookies:/run/cookies:ro
     networks:
       - bot-internal
     depends_on:

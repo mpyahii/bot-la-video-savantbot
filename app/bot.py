@@ -19,7 +19,7 @@ from telegram.ext import (
 from app.config import Settings
 from app.downloader import DownloadError, VideoDownloader
 from app.storage import DownloadStorage, StorageError
-from app.utils import domain_for_log, extract_url, validate_url
+from app.utils import domain_for_log, extract_url, validate_video_url
 
 logger = logging.getLogger(__name__)
 
@@ -128,7 +128,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     if not update.message or not update.message.text:
         return
     url = extract_url(update.message.text)
-    if not url or not validate_url(url):
+    valid, validation_error = validate_video_url(url or "")
+    if not url or not valid:
+        if validation_error and "TikTok" in validation_error:
+            await update.message.reply_text(f"❌ {validation_error}.")
+            return
         await update.message.reply_text("Tafadhali tuma URL halali inayoanza na http:// au https://.")
         return
 

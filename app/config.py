@@ -27,6 +27,7 @@ class Settings:
     telegram_api_id: str | None
     telegram_api_hash: str | None
     max_video_height: int
+    cookies_file: Path | None
     max_concurrent_downloads: int
     max_queued_downloads: int
     download_dir: Path
@@ -54,6 +55,9 @@ class Settings:
             telegram_api_id=os.getenv("TELEGRAM_API_ID") or None,
             telegram_api_hash=os.getenv("TELEGRAM_API_HASH") or None,
             max_video_height=_int_env("MAX_VIDEO_HEIGHT", 1080),
+            cookies_file=Path(os.environ["COOKIES_FILE"])
+            if os.getenv("COOKIES_FILE")
+            else None,
             max_concurrent_downloads=_int_env("MAX_CONCURRENT_DOWNLOADS", 2),
             max_queued_downloads=_int_env("MAX_QUEUED_DOWNLOADS", 8),
             download_dir=Path(os.getenv("DOWNLOAD_DIR", "/tmp/bot-downloads")),

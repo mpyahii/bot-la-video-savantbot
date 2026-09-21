@@ -56,6 +56,7 @@ See `.env.example` for every supported variable. The important values are:
 | `DOWNLOAD_RETENTION_HOURS` | Successful job retention, default `2` |
 | `CLEANUP_INTERVAL_SECONDS` | Expiry scan interval, default `600` |
 | `MIN_FREE_DISK_GB` | Refuse new jobs below this free-space reserve |
+| `COOKIES_FILE` | Optional mounted Netscape cookies file for authenticated sources |
 
 `TELEGRAM_API_BASE_URL` should be the service root. Direct development uses
 `https://api.telegram.org`; the integrated Compose stack uses
@@ -148,4 +149,7 @@ For failures, inspect container logs. The bot returns safe user-facing errors
 while logs include job ID, user ID, domain, operation, and exception type; it
 does not log tokens, API hashes, cookies, or passwords. Private, geo-restricted,
 authentication-required, unsupported, and FFmpeg failures require a different
-source URL or an explicitly supported authentication design.
+source URL or authentication. If YouTube reports `Sign in to confirm you are
+not a bot`, export a Netscape-format cookies file to `cookies/youtube.txt`, set
+`COOKIES_FILE=/run/cookies/youtube.txt` in `.env`, and recreate the bot. Never
+commit cookies.
