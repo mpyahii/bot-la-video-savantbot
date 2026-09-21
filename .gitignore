@@ -1,0 +1,6 @@
+.env
+__pycache__/
+*.log
+downloads/
+tmp/
+.pytest_cache/

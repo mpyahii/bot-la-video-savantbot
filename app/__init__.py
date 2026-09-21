@@ -1,0 +1,1 @@
+"""Video downloader bot application package."""

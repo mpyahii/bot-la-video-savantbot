@@ -1,0 +1,10 @@
+services:
+  bot:
+    network_mode: service:telegram-bot-api
+    networks: !reset []
+    environment:
+      TELEGRAM_API_BASE_URL: http://127.0.0.1:8081
+
+  telegram-bot-api:
+    network_mode: host
+    networks: !reset []
